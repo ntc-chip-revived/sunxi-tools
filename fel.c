@@ -1092,6 +1092,7 @@ int main(int argc, char **argv)
 	int uboot_autostart = 0; /* flag for "uboot" command = U-Boot autostart */
 	int rc;
 	libusb_device_handle *handle = NULL;
+	int busnum = -1, devnum = -1;
 	int iface_detached = -1;
 	rc = libusb_init(NULL);
 	assert(rc == 0);
@@ -1099,6 +1100,7 @@ int main(int argc, char **argv)
 	if (argc <= 1) {
 		printf("Usage: %s [options] command arguments... [command...]\n"
 			"	-v, --verbose			Verbose logging\n"
+			"	-d, --dev busnum:devnum		Specify the USB device to use\n"
 			"	-p, --progress			Show progress bar when transferring large files\n"
 			"\n"
 			"	spl file			Load and execute U-Boot SPL\n"
@@ -1124,6 +1126,59 @@ int main(int argc, char **argv)
 	}
 
 	handle = libusb_open_device_with_vid_pid(NULL, 0x1f3a, 0xefe8);
+	while (argc > 1) {
+		if (argv[1][0] != '-')
+			break;
+	
+		if (strcmp(argv[1], "--verbose") == 0 ||
+		    strcmp(argv[1], "-v") == 0)
+			verbose = 1;
+
+		if (strcmp(argv[1], "--progress") == 0 ||
+		    strcmp(argv[1], "-p") == 0)
+			progress = 1;
+	
+		if (strcmp(argv[1], "--dev") == 0 ||
+		    strcmp(argv[1], "-d") == 0) {
+			char *dev = argv[2];
+	
+			busnum = strtoul(dev, &dev, 0);
+			devnum = strtoul(dev + 1, NULL, 0);
+			argc -= 1;
+			argv += 1;
+		}
+	
+		argc -= 1;
+		argv += 1;
+	}
+	
+	if (busnum >= 0 && devnum >= 0) {
+		struct libusb_device_descriptor desc;
+		size_t ndevs, i;
+		libusb_device **list;
+		libusb_device *dev = NULL;
+	
+		ndevs = libusb_get_device_list(NULL, &list);
+		for (i = 0; i < ndevs; i++) {
+			if (libusb_get_bus_number(list[i]) != busnum ||
+			    libusb_get_device_address(list[i]) != devnum)
+				continue;
+	
+			libusb_get_device_descriptor(list[i], &desc);
+			if (desc.idVendor == 0x1f3a &&
+			    desc.idProduct == 0xefe8)
+				dev = list[i];
+			break;
+		}
+	
+		if (dev) {
+			libusb_ref_device(dev);
+			libusb_open(dev, &handle);
+		}
+		libusb_free_device_list (list, 1);
+	} else {
+		handle = libusb_open_device_with_vid_pid(NULL, 0x1f3a, 0xefe8);
+	}
 	if (!handle) {
 		switch (errno) {
 		case EACCES:
@@ -1152,16 +1207,7 @@ int main(int argc, char **argv)
 
 	while (argc > 1 ) {
 		int skip = 1;
-
-		if (argc > 1 && (strcmp(argv[1], "--verbose") == 0 ||
-				 strcmp(argv[1], "-v") == 0)) {
-			verbose = 1;
-			skip = 1;
-		} else if (argc > 1 && (strcmp(argv[1], "--progress") == 0 ||
-				 strcmp(argv[1], "-p") == 0)) {
-			progress = 1;
-			skip = 1;
-		} else if (strncmp(argv[1], "hex", 3) == 0 && argc > 3) {
+		if (strncmp(argv[1], "hex", 3) == 0 && argc > 3) {
 			aw_fel_hexdump(handle, strtoul(argv[2], NULL, 0), strtoul(argv[3], NULL, 0));
 			skip = 3;
 		} else if (strncmp(argv[1], "dump", 4) == 0 && argc > 3) {
