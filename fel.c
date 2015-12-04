@@ -1161,8 +1161,13 @@ int main(int argc, char **argv)
 		ndevs = libusb_get_device_list(NULL, &list);
 		for (i = 0; i < ndevs; i++) {
 			if (libusb_get_bus_number(list[i]) != busnum ||
-			    libusb_get_device_address(list[i]) != devnum)
+			    libusb_get_device_address(list[i]) != devnum) {
+				if (i == ndevs-1) {
+					fprintf(stderr, "ERROR: No USB FEL device at 0x%x:0x%x\n", busnum, devnum);
+					exit(1);
+				}
 				continue;
+			}
 	
 			libusb_get_device_descriptor(list[i], &desc);
 			if (desc.idVendor == 0x1f3a &&
