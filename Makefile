@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CC = gcc
+CC = i686-w64-mingw32-gcc
 CFLAGS = -g -O0 -Wall -Wextra
 CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200112L
 CFLAGS += -Iinclude/
@@ -26,7 +26,7 @@ TOOLS += nand-part
 
 MISC_TOOLS = phoenix_info
 
-CROSS_COMPILE ?= arm-none-eabi-
+CROSS_COMPILE = i686-w64-mingw32-
 
 .PHONY: all clean
 

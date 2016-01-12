@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-#include "endian_compat.h"
+#include "portable_endian.h"
 
 struct  aw_usb_request {
 	char signature[8];
