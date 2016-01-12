@@ -1,5 +1,6 @@
 #clone the repository
 git clone -b windows https://github.com/NextThingCo/sunxi-tools.git
+cd sunxi-tools
 
 mkdir windows && pushd windows
 
