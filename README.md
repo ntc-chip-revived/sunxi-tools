@@ -2,7 +2,12 @@
 For convenience, there is an already built fel.exe in the dist folder. It can be downloaded from here:
 https://github.com/NextThingCo/sunxi-tools/blob/windows/dist/fel.exe
 
-##Building
+##Building (Cross compiling)
+If you don't have them, you'll need the mingw cross-compiler toolchains:
+```sudo apt-get install mingw-w64 mingw-w64-tools
+```
+I did not put them in the install_windows.sh script
+
 To install the repository and libusb, and build fel:
 ```
 curl https://raw.githubusercontent.com/NextThingCo/sunxi-tools/windows/install_windows.sh | bash
