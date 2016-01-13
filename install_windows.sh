@@ -15,5 +15,7 @@ export PKG_CONFIG_PATH=$PWD/lib/pkgconfig
 
 popd
 popd
+
 make fel
 
+mv fel dist/fel.exe
