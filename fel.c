@@ -1203,6 +1203,8 @@ int main(int argc, char **argv)
 		rc = libusb_claim_interface(handle, 0);
 	}
 #endif
+	if (rc != 0)
+		fprintf(stderr, "ERROR: lsusb_claim_interface %d\n",rc);
 	assert(rc == 0);
 
 	if (aw_fel_get_endpoint(handle)) {

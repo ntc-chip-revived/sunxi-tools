@@ -13,7 +13,6 @@ find -name '*.pc' | while read pc; do sed -e "s@^prefix=.*@prefix=$PWD@" -i "$pc
 
 export PKG_CONFIG_PATH=$PWD/lib/pkgconfig
 
-echo $PKG_CONFIG_PATH
 popd
 popd
 make fel
