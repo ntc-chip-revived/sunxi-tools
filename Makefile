@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 CC = i686-w64-mingw32-gcc
+LIBS=-lws2_32
 CFLAGS = -g -O0 -Wall -Wextra
 CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200112L
 CFLAGS += -Iinclude/
