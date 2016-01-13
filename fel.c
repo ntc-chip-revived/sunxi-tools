@@ -1281,6 +1281,8 @@ int main(int argc, char **argv)
 		pr_info("Starting U-Boot (0x%08X).\n", uboot_entry);
 		aw_fel_execute(handle, uboot_entry);
 	}
+	
+	libusb_release_interface(handle, 0);
 
 #if defined(__linux__)
 	if (iface_detached >= 0)
