@@ -12,7 +12,7 @@ To install the repository and libusb, and build fel:
 ```
 curl https://raw.githubusercontent.com/NextThingCo/sunxi-tools/windows/install_windows.sh | bash
 ```
-If all goes well, in sunxi-tools, there will be a fel.exe produced
+If all goes well, in sunxi-tools/dist, there will be a fel.exe
 
 ##Windows Driver
 Temporary solution:
