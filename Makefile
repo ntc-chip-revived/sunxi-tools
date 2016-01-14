@@ -16,9 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CC = i686-w64-mingw32-gcc
+CC = gcc
+CPP = g++
+
 LIBS=-lws2_32
-CFLAGS = -g -O0 -Wall -Wextra
+CFLAGS = -g -O0 -Wall -Wextra -static-libstdc++
 CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200112L
 CFLAGS += -Iinclude/
 
@@ -54,8 +56,14 @@ LIBUSB_CFLAGS = `pkg-config --cflags $(LIBUSB)`
 LIBUSB_LIBS = `pkg-config --libs $(LIBUSB)`
 
 fel: fel.c fel-to-spl-thunk.h
-	$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^) $(LIBS) $(LIBUSB_LIBS)
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^) $(LIBS) $(LIBUSB_LIBS)
 
+felw: felw.c fel-to-spl-thunk.h
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) -c -o felw.o felw.c 
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) -c -o testFelw.o testFelw.c 	
+	$(CROSS_COMPILE)$(CPP) $(CFLAGS) -c -o felwpp.o felw.cpp 	
+	$(CROSS_COMPILE)$(CPP) $(CFLAGS) $(LIBUSB_CFLAGS)$(LDFLAGS) -o $@ felw.o felwpp.o testFelw.o $(LIBS) $(LIBUSB_LIBS)
+	
 nand-part: nand-part-main.c nand-part.c nand-part-a10.h nand-part-a20.h
 	$(CC) $(CFLAGS) -c -o nand-part-main.o nand-part-main.c
 	$(CC) $(CFLAGS) -c -o nand-part-a10.o nand-part.c -D A10
