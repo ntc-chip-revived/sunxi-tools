@@ -8,7 +8,8 @@ void throw_exit(int val) {
 	throw (val);
 }
 void throw_assert(int val) {
-	throw ((bool)val);
+	if (!val)
+		throw ((bool)val);
 }
 int call_main(int argc, char **argv, MAIN_FUNC main_func, char * redirect_stdout_file)
 {

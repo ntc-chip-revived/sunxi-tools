@@ -1094,12 +1094,15 @@ int fel_main_body(int argc, char **argv)
 int main(int argc, char **argv)
 #endif
 {
+printf("\nIn fel_main_body argc=%d",argc );
+printf("\nIn fel_main_body argv[0]=%s",argv[0] );
 	int uboot_autostart = 0; /* flag for "uboot" command = U-Boot autostart */
 	int rc;
 	libusb_device_handle *handle = NULL;
 	int busnum = -1, devnum = -1;
 	int iface_detached = -1;
 	rc = libusb_init(NULL);
+
 	throw_assert(rc == 0);
 
 	if (argc <= 1) {

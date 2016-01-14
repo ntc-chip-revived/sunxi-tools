@@ -18,6 +18,7 @@ int fel_main_body(int argc, char **argv);
 
 int fel_main(int argc, char **argv)
 {
+	printf("in fel_main, about to call)call_main");
 	return call_main(argc, argv, fel_main_body, "fel.out");
 }
 
