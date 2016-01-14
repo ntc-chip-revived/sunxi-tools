@@ -37,7 +37,7 @@
 
 #include "portable_endian.h"
 
-#include "felw.h"
+#include "build_type.h"
 
 struct  aw_usb_request {
 	char signature[8];
@@ -1088,8 +1088,11 @@ static double gettime(void)
 	gettimeofday(&tv, NULL);
 	return tv.tv_sec + (double)tv.tv_usec / 1000000.;
 }
-
+#ifdef BUILD_AS_OBJECT
 int fel_main_body(int argc, char **argv)
+#else
+int main(int argc, char **argv)
+#endif
 {
 	int uboot_autostart = 0; /* flag for "uboot" command = U-Boot autostart */
 	int rc;

@@ -58,11 +58,12 @@ LIBUSB_LIBS = `pkg-config --libs $(LIBUSB)`
 fel: fel.c fel-to-spl-thunk.h
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^) $(LIBS) $(LIBUSB_LIBS)
 
-felw: felw.c fel-to-spl-thunk.h
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) -c -o felw.o felw.c 
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) -c -o testFelw.o testFelw.c 	
-	$(CROSS_COMPILE)$(CPP) $(CFLAGS) -c -o felwpp.o felw.cpp 	
-	$(CROSS_COMPILE)$(CPP) $(CFLAGS) $(LIBUSB_CFLAGS)$(LDFLAGS) -o $@ felw.o felwpp.o testFelw.o $(LIBS) $(LIBUSB_LIBS)
+felw: sunxi.cpp build_type.cpp felw.c fel-to-spl-thunk.h include/build_type.h
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o felw.o felw.c 
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o testFelw.o testFelw.c 	
+	$(CROSS_COMPILE)$(CPP) $(CFLAGS) -DBUILD_AS_OBJECT -c -o sunxi.o sunxi.cpp 
+	$(CROSS_COMPILE)$(CPP) $(CFLAGS) -DBUILD_AS_OBJECT -c -o build_type.o build_type.cpp 		
+	$(CROSS_COMPILE)$(CPP) $(CFLAGS) $(LIBUSB_CFLAGS)$(LDFLAGS) -o $@ felw.o sunxi.o build_type.o testFelw.o $(LIBS) $(LIBUSB_LIBS)
 	
 nand-part: nand-part-main.c nand-part.c nand-part-a10.h nand-part-a20.h
 	$(CC) $(CFLAGS) -c -o nand-part-main.o nand-part-main.c
