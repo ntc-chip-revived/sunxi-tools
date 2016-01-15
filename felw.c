@@ -1089,13 +1089,11 @@ static double gettime(void)
 	return tv.tv_sec + (double)tv.tv_usec / 1000000.;
 }
 #ifdef BUILD_AS_OBJECT
-int fel_main_body(int argc, char **argv)
+int fel_main(int argc, char **argv)
 #else
 int main(int argc, char **argv)
 #endif
 {
-printf("\nIn fel_main_body argc=%d",argc );
-printf("\nIn fel_main_body argv[0]=%s",argv[0] );
 	int uboot_autostart = 0; /* flag for "uboot" command = U-Boot autostart */
 	int rc;
 	libusb_device_handle *handle = NULL;

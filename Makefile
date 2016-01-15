@@ -21,8 +21,10 @@ CPP = g++
 
 
 CFLAGS = -g -O0 -Wall -Wextra -static-libstdc++ -static-libgcc
-CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200112L
+CFLAGS += -D_POSIX_C_SOURCE=200112L
 CFLAGS += -Iinclude/
+
+CPPFLAGS = -std=c++11
 
 TOOLS = fexc bin2fex fex2bin bootinfo fel pio
 TOOLS += nand-part
@@ -57,16 +59,18 @@ LIBUSB_CFLAGS = `pkg-config --cflags $(LIBUSB)`
 LIBUSB_LIBS = `pkg-config --libs $(LIBUSB)`
 
 fel: fel.c fel-to-spl-thunk.h
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^) $(LIBS) $(LIBUSB_LIBS)
-#	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o throw_assert.o throw_assert.c 	 	
+	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^) $(LIBS) $(LIBUSB_LIBS)
+#	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o throw_assert.o throw_assert.c 	 	
 
-felw: sunxi.cpp build_type.cpp felw.c throw_assert.c fel-to-spl-thunk.h include/build_type.h
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o felw.o felw.c 
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o testFelw.o testFelw.c
+felw: sunxi.cpp build_type.cpp felw.c throw_assert.c fel-to-spl-thunk.h include/build_type.h include/sunxi.h
+	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o felw.o felw.c 
+	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o testFelw.o testFelw.c
 	
-	$(CROSS_COMPILE)$(CPP) $(CFLAGS) -DBUILD_AS_OBJECT -c -o sunxi.o sunxi.cpp 
-	$(CROSS_COMPILE)$(CPP) $(CFLAGS) -DBUILD_AS_OBJECT -c -o build_type.o build_type.cpp 		
-	$(CROSS_COMPILE)$(CPP) $(CFLAGS) $(LIBUSB_CFLAGS)$(LDFLAGS) -o $@ felw.o sunxi.o build_type.o testFelw.o  $(LIBS) $(LIBUSB_LIBS)
+	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) -DBUILD_AS_OBJECT -c -o sunxi.o sunxi.cpp 
+	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) -DBUILD_AS_OBJECT -c -o build_type.o build_type.cpp 		
+	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) $(LIBUSB_CFLAGS)$(LDFLAGS) -o $@ felw.o sunxi.o build_type.o testFelw.o  $(LIBS) $(LIBUSB_LIBS)
+	ar rcs dist/libfel.a felw.o sunxi.o build_type.o
+	
 	
 nand-part: nand-part-main.c nand-part.c nand-part-a10.h nand-part-a20.h
 	$(CC) $(CFLAGS) -c -o nand-part-main.o nand-part-main.c
