@@ -57,19 +57,26 @@ fexc: fexc.h script.h script.c \
 LIBUSB = libusb-1.0
 LIBUSB_CFLAGS = `pkg-config --cflags $(LIBUSB)`
 LIBUSB_LIBS = `pkg-config --libs $(LIBUSB)`
+SUNXI_LIB = `pkg-config --libs libsunxi`
+
 
 fel: fel.c fel-to-spl-thunk.h
-	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^) $(LIBS) $(LIBUSB_LIBS)
-#	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o throw_assert.o throw_assert.c 	 	
+	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^)  $(LIBUSB_LIBS) $(LIBS)
 
-felw: sunxi.cpp build_type.cpp felw.c throw_assert.c fel-to-spl-thunk.h include/build_type.h include/sunxi.h
-	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o felw.o felw.c 
-	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DBUILD_AS_OBJECT $(LIBUSB_CFLAGS) -c -o testFelw.o testFelw.c
+libsunxi: libsunxi.cpp fel.c fel-to-spl-thunk.h include/libsunxi.h
+	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DLIBSUNXI $(LIBUSB_CFLAGS) -c -o fel.o fel.c 
+	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) -DLIBSUNXI -c -o libsunxi.o libsunxi.cpp 
+	mkdir -p dist/usr/$(CROSS_COMPILE)static/lib/pkgconfig
+	cp libsunxi.pc dist/usr/$(CROSS_COMPILE)static/lib/pkgconfig/.
+	mkdir -p dist/usr/$(CROSS_COMPILE)static/include	
+	ar rcs dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a fel.o libsunxi.o 
+	cp include/libsunxi.h dist/usr/$(CROSS_COMPILE)static/include/.
 	
-	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) -DBUILD_AS_OBJECT -c -o sunxi.o sunxi.cpp 
-	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) -DBUILD_AS_OBJECT -c -o build_type.o build_type.cpp 		
-	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) $(LIBUSB_CFLAGS)$(LDFLAGS) -o $@ felw.o sunxi.o build_type.o testFelw.o  $(LIBS) $(LIBUSB_LIBS)
-	ar rcs dist/libfel.a felw.o sunxi.o build_type.o
+# This will generate an executable that uses the sunxi-lib	
+fel-libsunxi: libsunxi fel-libsunxi.o fel.o
+	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DLIBSUNXI $(LIBUSB_CFLAGS) -c -o fel-libsunxi.o fel-libsunxi.c
+	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) $(LIBUSB_CFLAGS)$(LDFLAGS) -o $@ fel-libsunxi.o $(SUNXI_LIB) $(LIBUSB_LIBS)  $(LIBS)
+	
 	
 	
 nand-part: nand-part-main.c nand-part.c nand-part-a10.h nand-part-a20.h

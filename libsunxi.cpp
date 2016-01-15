@@ -1,12 +1,28 @@
 #include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
 #include <fstream>
 #include <sstream>
-extern "C" {
 
-#include "build_type.h"
+extern "C" {
+#include "libsunxi.h"
+
+/* Notes on translation from c to cpp
+ *
+ * In felw.c:
+ * 		replaced "exit(" with "throw_exit("
+ * 		replaced "assert(" with "throw_assert("
+ * 		renamed main() to fel_main via ifdef
+ * In this file:
+ * 		created fel_main() which is the entry point and calls fel_main_body
+ * 		fel_main() redirects stdout to fel.out, and puts it back to console when done
+ */
+
+
+
+
 
 
 void throw_exit(int val) {
@@ -69,6 +85,12 @@ int call_main(int argc, char **argv, MAIN_FUNC main_func, char ** returnBuffer)
 	/* Put back normal stdout to console. CON is a predefined value */
 	freopen("CON","w",stdout);
 	return result;
+}
+
+
+int fel(int argc, char **argv, char ** returnBuffer)
+{
+	return call_main(argc, argv, fel_main, returnBuffer);
 }
 
 }

@@ -1,13 +1,17 @@
-#ifndef _BUILD_TYPE_H
-#define _BUILD_TYPE_H
+#ifndef _LIBSUNXI_H
+#define _LIBSUNXI_H
 
 void throw_exit(int);
 void throw_assert(int);
 
-#ifdef BUILD_AS_OBJECT
 
 typedef int (*MAIN_FUNC)(int, char **);
 int call_main(int argc, char **argv, MAIN_FUNC main_func, char ** returnBuffer);
-#endif
+
+/* The fel function */
+int fel(int argc, char **argv, char ** returnBuffer);
+
+/* From fel.c */
+int fel_main(int argc, char **argv);
 
 #endif

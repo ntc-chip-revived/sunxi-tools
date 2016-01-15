@@ -36,6 +36,11 @@
 #include <sys/time.h>
 
 #include "portable_endian.h"
+#ifdef LIBSUNXI
+#include "libsunxi.h"
+#define assert(expr) throw_assert(expr)
+#define exit(expr) throw_exit(expr)
+#endif
 
 struct  aw_usb_request {
 	char signature[8];
@@ -1086,8 +1091,11 @@ static double gettime(void)
 	gettimeofday(&tv, NULL);
 	return tv.tv_sec + (double)tv.tv_usec / 1000000.;
 }
-
+#ifdef LIBSUNXI
+int fel_main(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 {
 	int uboot_autostart = 0; /* flag for "uboot" command = U-Boot autostart */
 	int rc;
