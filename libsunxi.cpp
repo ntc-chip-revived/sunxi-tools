@@ -1,4 +1,18 @@
 #include <stdio.h>
+#ifdef WINDOWS
+#include <io.h>
+#define DUP2 _dup2
+#define DUP _dup
+#define FILENO _fileno
+#define CLOSE _close
+#else
+#include <unistd.h>
+#define DUP2 dup2
+#define DUP dup
+#define FILENO fileno
+#define CLOSE close
+#endif
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,9 +78,20 @@ int call_main(int argc, char **argv, MAIN_FUNC main_func, char ** returnBuffer)
 {
 	std::string tempFileName = std::tmpnam(nullptr); // get a temp file name
 
+	/* See http://stackoverflow.com/questions/7664788/freopen-stdout-and-console */
 	/* redirecting stdout to a file */
-	FILE * redirect = freopen(tempFileName.c_str(),"w",stdout);
-	int result = 0;
+    int stdout_dupfd;
+    FILE *temp_out;
+
+    /* duplicate stdout */
+    stdout_dupfd = DUP(1);
+
+    temp_out = fopen(tempFileName.c_str(), "w");
+
+    /* replace stdout with our output fd */
+    DUP2(FILENO(temp_out), 1);
+
+    int result = 0;
 	try
 	{
 		result = (*main_func)(argc,argv);
@@ -74,16 +99,26 @@ int call_main(int argc, char **argv, MAIN_FUNC main_func, char ** returnBuffer)
 		result = -999;
 	} catch (int exitValue) {
 		result = exitValue;
+	} catch (...) {
+		fprintf(stderr,"some other exception");
+
 	}
-	fflush(redirect);
-	fclose(redirect);
+
+
+    /* flush output so it goes to our file */
+    fflush(stdout);
+    fclose(temp_out);
+    /* Now restore stdout */
+    DUP2(stdout_dupfd, 1);
+    CLOSE(stdout_dupfd);
+
 	if (result == 0)
 		*returnBuffer = slurpFileIntoBuffer(tempFileName); // remember to free this later
 	else
 		*returnBuffer = (char*) calloc(1,1); // a null terminated array
+
+
 	remove(tempFileName.c_str()); // get rid of temp files
-	/* Put back normal stdout to console. CON is a predefined value */
-	freopen("CON","w",stdout);
 	return result;
 }
 

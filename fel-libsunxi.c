@@ -1,5 +1,9 @@
-int fel_main(int argc, char **argv);
-
+#include <stdio.h>
+#include <stdlib.h>
+int fel(int argc, char **argv, char ** returnBuffer);
 int main(int argc, char **argv) {
-	return fel_main(argc,argv);
+	char * returnBuffer;
+	fel(argc,argv,&returnBuffer);
+	printf("%s",returnBuffer);
+	free(returnBuffer);
 }
