@@ -36,8 +36,11 @@
 #include <sys/time.h>
 
 #include "portable_endian.h"
+
+/* These ifdefs make it so instead of assert and exit, a throw happens */
 #ifdef LIBSUNXI
 #include "libsunxi.h"
+#undef assert
 #define assert(expr) throw_assert(expr)
 #define exit(expr) throw_exit(expr)
 #endif
@@ -369,7 +372,7 @@ void *load_file(const char *name, size_t *size)
 		perror("Failed to open input file: ");
 		exit(1);
 	}
-	
+
 	while(1) {
 		ssize_t len = bufsize - offset;
 		ssize_t n = fread(buf+offset, 1, len, in);
@@ -379,7 +382,7 @@ void *load_file(const char *name, size_t *size)
 		bufsize <<= 1;
 		buf = realloc(buf, bufsize);
 	}
-	if (size) 
+	if (size)
 		*size = offset;
 	if (in != stdin)
 		fclose(in);
@@ -1137,7 +1140,7 @@ int main(int argc, char **argv)
 	while (argc > 1) {
 		if (argv[1][0] != '-')
 			break;
-	
+
 		if (strcmp(argv[1], "--verbose") == 0 ||
 		    strcmp(argv[1], "-v") == 0)
 			verbose = 1;
@@ -1145,27 +1148,27 @@ int main(int argc, char **argv)
 		if (strcmp(argv[1], "--progress") == 0 ||
 		    strcmp(argv[1], "-p") == 0)
 			progress = 1;
-	
+
 		if (strcmp(argv[1], "--dev") == 0 ||
 		    strcmp(argv[1], "-d") == 0) {
 			char *dev = argv[2];
-	
+
 			busnum = strtoul(dev, &dev, 0);
 			devnum = strtoul(dev + 1, NULL, 0);
 			argc -= 1;
 			argv += 1;
 		}
-	
+
 		argc -= 1;
 		argv += 1;
 	}
-	
+
 	if (busnum >= 0 && devnum >= 0) {
 		struct libusb_device_descriptor desc;
 		size_t ndevs, i;
 		libusb_device **list;
 		libusb_device *dev = NULL;
-	
+
 		ndevs = libusb_get_device_list(NULL, &list);
 		for (i = 0; i < ndevs; i++) {
 			if (libusb_get_bus_number(list[i]) != busnum ||
@@ -1176,14 +1179,14 @@ int main(int argc, char **argv)
 				}
 				continue;
 			}
-	
+
 			libusb_get_device_descriptor(list[i], &desc);
 			if (desc.idVendor == 0x1f3a &&
 			    desc.idProduct == 0xefe8)
 				dev = list[i];
 			break;
 		}
-	
+
 		if (dev) {
 			libusb_ref_device(dev);
 			libusb_open(dev, &handle);

@@ -1,4 +1,4 @@
-prefix=/home/howie/dev/cross/sunxi-tools/dist/usr/i686-w64-mingw32-static
+prefix=/home/howie/dev/cross/sunxi-tools
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

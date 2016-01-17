@@ -1,6 +1,7 @@
 #Windows
-For convenience, there is an already built fel.exe in the dist folder. It can be downloaded from here:
-https://github.com/NextThingCo/sunxi-tools/blob/windows/dist/fel.exe
+
+The target libsunxi will cross compile a library which can be used on windows.
+The target fel-libsunxi will build an executable which uses the library resulting in a windows version of the fell tool
 
 ##Building (Cross compiling)
 If you don't have them, you'll need the mingw cross-compiler toolchains:
@@ -14,7 +15,7 @@ curl https://raw.githubusercontent.com/NextThingCo/sunxi-tools/windows/install_w
 ```
 If all goes well, in sunxi-tools/dist, there will be a fel.exe
 
-##Windows Driver
+##Windows USB Driver
 Temporary solution:
 On windows, install appropriate driver from http://zadig.akeo.ie/
 

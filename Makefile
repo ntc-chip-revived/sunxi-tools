@@ -17,22 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 CC = gcc
-CPP = g++
-
-
-CFLAGS = -g -O0 -Wall -Wextra -static-libstdc++ -static-libgcc
-CFLAGS += -D_POSIX_C_SOURCE=200112L
+CFLAGS = -g -O0 -Wall -Wextra
+CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200112L
 CFLAGS += -Iinclude/
-
-CPPFLAGS = -std=c++11
 
 TOOLS = fexc bin2fex fex2bin bootinfo fel pio
 TOOLS += nand-part
 
 MISC_TOOLS = phoenix_info
-
-#LIBS=-lws2_32
-#CROSS_COMPILE = i686-w64-mingw32-
 
 .PHONY: all clean
 
@@ -57,28 +49,10 @@ fexc: fexc.h script.h script.c \
 LIBUSB = libusb-1.0
 LIBUSB_CFLAGS = `pkg-config --cflags $(LIBUSB)`
 LIBUSB_LIBS = `pkg-config --libs $(LIBUSB)`
-SUNXI_LIB = `pkg-config --libs libsunxi`
-
 
 fel: fel.c fel-to-spl-thunk.h
-	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^)  $(LIBUSB_LIBS) $(LIBS)
-
-libsunxi: libsunxi.cpp fel.c fel-to-spl-thunk.h include/libsunxi.h
-	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DLIBSUNXI $(LIBUSB_CFLAGS) -c -o fel.o fel.c 
-	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) -DLIBSUNXI -c -o libsunxi.o libsunxi.cpp 
-	mkdir -p dist/usr/$(CROSS_COMPILE)static/lib/pkgconfig
-	cp libsunxi.pc dist/usr/$(CROSS_COMPILE)static/lib/pkgconfig/.
-	mkdir -p dist/usr/$(CROSS_COMPILE)static/include	
-	ar rcs dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a fel.o libsunxi.o 
-	cp include/libsunxi.h dist/usr/$(CROSS_COMPILE)static/include/.
-	
-# This will generate an executable that uses the sunxi-lib	
-fel-libsunxi: libsunxi fel-libsunxi.o fel.o
-	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DLIBSUNXI $(LIBUSB_CFLAGS) -c -o fel-libsunxi.o fel-libsunxi.c
-	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS) $(CFLAGS) $(LIBUSB_CFLAGS)$(LDFLAGS) -o $@ fel-libsunxi.o $(SUNXI_LIB) $(LIBUSB_LIBS)  $(LIBS)
-	
-	
-	
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ $(filter %.c,$^) $(LIBUSB_LIBS) $(LIBS)
+		
 nand-part: nand-part-main.c nand-part.c nand-part-a10.h nand-part-a20.h
 	$(CC) $(CFLAGS) -c -o nand-part-main.o nand-part-main.c
 	$(CC) $(CFLAGS) -c -o nand-part-a10.o nand-part.c -D A10
@@ -142,3 +116,32 @@ meminfo: meminfo.c
 	@for x in $(TOOLS) '*.o' '*.swp'; do \
 		echo "$$x"; \
 	done > $@
+
+##########################################
+#libsunxi
+##########################################	
+CPP = g++
+SUNXI_LIB = `pkg-config --libs libsunxi`
+CPPFLAGS = -g -O0 -Wall -Wextra
+CPPFLAGS += -std=c++11 -D_POSIX_C_SOURCE=200112L
+CPPFLAGS += -Iinclude/
+CPPFLAGS += -static-libstdc++ -static-libgcc
+
+# Build sunxi as a static library. Note that we cannot reuse the fel target's fel.o because it is compiled with different preprocessor flags
+libsunxi: fel.c libsunxi.cpp fel-to-spl-thunk.h include/libsunxi.h
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -DLIBSUNXI -c $(filter %.c,$^)  $(LIBUSB_LIBS) $(LIBS)
+	# Compile libsunxi as a cpp file since it contains throws
+	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS)  -DLIBSUNXI -c -o libsunxi.o libsunxi.cpp 
+	ar rcs dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a fel.o libsunxi.o 
+	tar cvzf dist/libsunxi.tar.gz dist/usr/$(CROSS_COMPILE)static
+	
+		
+# This will generate a test executable that uses the sunxi-lib	
+fel-libsunxi: libsunxi fel-libsunxi.c
+	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DLIBSUNXI $(LIBUSB_CFLAGS) -c -o fel-libsunxi.o fel-libsunxi.c
+	#link as g++ because linking C and C++ together
+	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS)  $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ fel-libsunxi.o $(PWD)/dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a $(LIBUSB_LIBS)  $(LIBS)
+	strip $@
+	
+	
+	
