@@ -133,7 +133,7 @@ libsunxi: fel.c libsunxi.cpp fel-to-spl-thunk.h include/libsunxi.h
 	# Compile libsunxi as a cpp file since it contains throws
 	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS)  -DLIBSUNXI -c -o libsunxi.o libsunxi.cpp 
 	ar rcs dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a fel.o libsunxi.o 
-	tar cvzf dist/libsunxi.tar.gz dist/usr/$(CROSS_COMPILE)static
+	cd dist/usr/$(CROSS_COMPILE)static; tar cvzf libsunxi.tar.gz *
 	
 		
 # This will generate a test executable that uses the sunxi-lib	
