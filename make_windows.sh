@@ -1,6 +1,6 @@
 CROSS_COMPILE='i686-w64-mingw32-'
 LIBS=-lws2_32
-PREBUILT=$(pwd)/windows/usr/$CROSS_COMPILE"static"
+PREBUILT=$(pwd)/lib/usr/$CROSS_COMPILE"static"
 DIST=$(pwd)/dist/usr/$CROSS_COMPILE"static"
 
 #Set up pkgconfig directories and static
