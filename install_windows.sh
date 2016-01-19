@@ -16,6 +16,8 @@ pushd i686-w64-mingw32-static
 find -name '*.pc' | while read pc; do sed -e "s@^prefix=.*@prefix=$PWD@" -i "$pc"; done
 
 export PKG_CONFIG_PATH=$PWD/lib/pkgconfig
+
+
 popd
 popd
 popd
