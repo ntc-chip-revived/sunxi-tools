@@ -1103,9 +1103,11 @@ int main(int argc, char **argv)
 	int uboot_autostart = 0; /* flag for "uboot" command = U-Boot autostart */
 	int rc;
 	libusb_device_handle *handle = NULL;
+	libusb_context *ctx = NULL; //a libusb session
+
 	int busnum = -1, devnum = -1;
 	int iface_detached = -1;
-	rc = libusb_init(NULL);
+	rc = libusb_init(&ctx);
 	assert(rc == 0);
 
 	if (argc <= 1) {
@@ -1300,5 +1302,16 @@ int main(int argc, char **argv)
 		libusb_attach_kernel_driver(handle, iface_detached);
 #endif
 
+/* Cleanup when finished - added for use in library. See http://www.dreamincode.net/forums/topic/148707-introduction-to-using-libusb-10/ */
+	if (handle) {
+		rc = libusb_release_interface(handle, 0); //release the claimed interface
+		if (rc != 0) {
+			fprintf(stderr,"Cannot Release Interface");
+			return 1;
+		} else {
+			libusb_close(handle); //close the device we opened
+			libusb_exit(ctx); //needs to be called to end the
+		}
+	}
 	return 0;
 }

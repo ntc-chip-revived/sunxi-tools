@@ -9,6 +9,7 @@ curl http://pkg.mxe.cc/repos/tar/mxe-i686-w64-mingw32.static/mxe-i686-w64-mingw3
 
 #rename to properly prefixed name
 pushd usr
+rm -rf i686-w64-mingw32-static
 mv i686-w64-mingw32.static i686-w64-mingw32-static
 
 #modify the pkg-config file for libusb so it points here
