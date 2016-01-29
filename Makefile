@@ -132,7 +132,7 @@ libsunxi: fel-new.c libsunxi.cpp fel-to-spl-thunk.h include/libsunxi.h
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -DLIBSUNXI -c $(filter %.c,$^)  $(LIBUSB_LIBS) $(LIBS)
 	# Compile libsunxi as a cpp file since it contains throws
 	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS)  -DLIBSUNXI -c -o libsunxi.o libsunxi.cpp 
-	ar rcs dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a fel.o libsunxi.o 
+	ar rcs dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a fel-new.o libsunxi.o 
 	cd dist/usr/$(CROSS_COMPILE)static; tar cvzf libsunxi.tar.gz *
 	
 		
@@ -143,5 +143,11 @@ fel-libsunxi: libsunxi fel-libsunxi.c
 	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS)  $(LIBUSB_CFLAGS) $(LDFLAGS) -o $@ fel-libsunxi.o $(PWD)/dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a $(LIBUSB_LIBS)  $(LIBS)
 	strip $@
 	
+# This will generate a test executable that uses the sunxi-lib	
+fel.dll: libsunxi fel-libsunxi.c
+	$(CROSS_COMPILE)$(CC) -std=c99 $(CFLAGS) -DLIBSUNXI $(LIBUSB_CFLAGS) -c -o fel-libsunxi.o fel-libsunxi.c
+	#link as g++ because linking C and C++ together
+	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS)  $(LIBUSB_CFLAGS) $(LDFLAGS) -shared -o $@ $(PWD)/dist/usr/$(CROSS_COMPILE)static/lib/libsunxi.a $(LIBUSB_LIBS)  $(LIBS)
+#	strip $@
 	
 	
