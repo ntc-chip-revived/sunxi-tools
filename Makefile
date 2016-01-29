@@ -128,7 +128,7 @@ CPPFLAGS += -Iinclude/
 CPPFLAGS += -static-libstdc++ -static-libgcc
 
 # Build sunxi as a static library. Note that we cannot reuse the fel target's fel.o because it is compiled with different preprocessor flags
-libsunxi: fel.c libsunxi.cpp fel-to-spl-thunk.h include/libsunxi.h
+libsunxi: fel-new.c libsunxi.cpp fel-to-spl-thunk.h include/libsunxi.h
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(LIBUSB_CFLAGS) $(LDFLAGS) -DLIBSUNXI -c $(filter %.c,$^)  $(LIBUSB_LIBS) $(LIBS)
 	# Compile libsunxi as a cpp file since it contains throws
 	$(CROSS_COMPILE)$(CPP) $(CPPFLAGS)  -DLIBSUNXI -c -o libsunxi.o libsunxi.cpp 
